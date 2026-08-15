@@ -4,10 +4,11 @@ import {
   Pause,
   SkipBack,
   SkipForward,
+  RotateCcw,
+  RotateCw,
   Volume2,
   VolumeX,
   Radio,
-  RotateCw,
   Tv,
 } from 'lucide-react';
 import {
@@ -15,6 +16,7 @@ import {
   prevTrack,
   seekTrackTo,
   setTrackVolume,
+  jumpSeconds,
   getPlayerCurrentTime,
   getPlayerDuration,
 } from '../services/youtube';
@@ -43,7 +45,6 @@ export const RadioPlayer: React.FC<RadioPlayerProps> = ({
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(80);
   const [isVolumeMuted, setIsVolumeMuted] = useState(false);
-  const [, setIsHovered] = useState(false);
 
   // Sync track progress
   useEffect(() => {
@@ -93,20 +94,17 @@ export const RadioPlayer: React.FC<RadioPlayerProps> = ({
     return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   };
 
+  const totalTracksCount = Math.max(currentTrack.totalTracks || 12, 12);
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 sm:px-8 pb-4 sm:pb-6 z-30 pointer-events-auto">
-      <div 
-        className="glass-panel rounded-2xl sm:rounded-3xl p-3 sm:p-4 md:p-5 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-6 shadow-2xl transition-all duration-300"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
+    <div className="relative w-full max-w-5xl mx-auto px-4 sm:px-8 pb-4 sm:pb-6 z-30 pointer-events-auto">
+      {/* Main Glass Player Container */}
+      <div className="glass-panel rounded-2xl sm:rounded-3xl p-3 sm:p-4 md:p-5 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-6 shadow-2xl transition-all duration-300">
         {/* Left: Track Information & Retro Vinyl Art */}
         <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto flex-1 min-w-0">
           {/* Animated Vinyl Icon / Equalizer */}
           <div className="relative w-11 h-11 sm:w-14 sm:h-14 rounded-xl bg-slate-900/80 border border-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden group">
-            {/* Visualizer bars overlay */}
             <div className="absolute inset-0 bg-indigo-500/10 flex items-end justify-center gap-1 p-2">
               <div className={`w-1 bg-indigo-400 rounded-full transition-all ${isPlaying ? 'animate-eq-1' : 'h-1.5'}`} />
               <div className={`w-1 bg-indigo-300 rounded-full transition-all ${isPlaying ? 'animate-eq-2' : 'h-2'}`} />
@@ -124,7 +122,7 @@ export const RadioPlayer: React.FC<RadioPlayerProps> = ({
                 ZERO CAP RADIO
               </span>
               <span className="text-[9px] font-mono-code text-slate-400/60 hidden md:inline">
-                • TRACK {String(currentTrack.playlistIndex || 1).padStart(2, '0')} / {currentTrack.totalTracks || 12}
+                • TRACK {String(currentTrack.playlistIndex || 1).padStart(2, '0')} / {totalTracksCount}
               </span>
             </div>
 
@@ -153,7 +151,7 @@ export const RadioPlayer: React.FC<RadioPlayerProps> = ({
                   value={currentTime}
                   onChange={handleSeek}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  title="Seek track"
+                  title="Seek track progress"
                 />
               </div>
 
@@ -164,8 +162,8 @@ export const RadioPlayer: React.FC<RadioPlayerProps> = ({
           </div>
         </div>
 
-        {/* Center/Right: Playback Controls */}
-        <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-6 w-full sm:w-auto">
+        {/* Center/Right: Playback Skip & Controls */}
+        <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4 w-full sm:w-auto">
           {hasError ? (
             <button
               onClick={onRetry}
@@ -175,20 +173,30 @@ export const RadioPlayer: React.FC<RadioPlayerProps> = ({
               <span>RECONNECT SIGNAL</span>
             </button>
           ) : (
-            <div className="flex items-center gap-3 sm:gap-4 mx-auto sm:mx-0">
-              {/* Previous Track */}
+            <div className="flex items-center gap-1 sm:gap-2.5 mx-auto sm:mx-0">
+              {/* Previous Song Skip */}
               <button
                 onClick={prevTrack}
-                className="p-2 text-slate-400 hover:text-white transition-colors"
-                title="Previous Track in Playlist"
+                className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-full transition-all"
+                title="Previous Song in Playlist"
               >
                 <SkipBack className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
+
+              {/* Jump Back 10 Seconds */}
+              <button
+                onClick={() => jumpSeconds(-10)}
+                className="p-1.5 text-slate-400 hover:text-indigo-300 hover:bg-white/5 rounded-full transition-all relative flex items-center justify-center"
+                title="Jump Back 10 Seconds"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span className="text-[8px] font-mono-code font-bold absolute -bottom-1 text-slate-400">10</span>
               </button>
 
               {/* Play / Pause Main Button */}
               <button
                 onClick={onTogglePlay}
-                className="w-10 h-10 sm:w-12 sm:h-12 bg-white text-slate-950 rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all"
+                className="w-10 h-10 sm:w-12 sm:h-12 bg-white text-slate-950 rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all mx-1"
                 title={isPlaying ? 'Pause Music' : 'Play Music'}
               >
                 {isPlaying ? (
@@ -198,11 +206,21 @@ export const RadioPlayer: React.FC<RadioPlayerProps> = ({
                 )}
               </button>
 
-              {/* Next Track */}
+              {/* Jump Forward 10 Seconds */}
+              <button
+                onClick={() => jumpSeconds(10)}
+                className="p-1.5 text-slate-400 hover:text-indigo-300 hover:bg-white/5 rounded-full transition-all relative flex items-center justify-center"
+                title="Jump Forward 10 Seconds"
+              >
+                <RotateCw className="w-4 h-4" />
+                <span className="text-[8px] font-mono-code font-bold absolute -bottom-1 text-slate-400">10</span>
+              </button>
+
+              {/* Next Song Skip */}
               <button
                 onClick={nextTrack}
-                className="p-2 text-slate-400 hover:text-white transition-colors"
-                title="Next Track in Playlist"
+                className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-full transition-all"
+                title="Next Song in Playlist"
               >
                 <SkipForward className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
@@ -210,7 +228,7 @@ export const RadioPlayer: React.FC<RadioPlayerProps> = ({
           )}
 
           {/* Auxiliary Tools: Video PIP + Volume */}
-          <div className="flex items-center gap-2 border-l border-white/10 pl-3 sm:pl-5">
+          <div className="flex items-center gap-2 border-l border-white/10 pl-2 sm:pl-4">
             {/* Toggle Video Feed PIP */}
             {onToggleVideoFeed && (
               <button
@@ -245,7 +263,7 @@ export const RadioPlayer: React.FC<RadioPlayerProps> = ({
                 max={100}
                 value={isVolumeMuted ? 0 : volume}
                 onChange={handleVolumeChange}
-                className="w-14 sm:w-18 h-1 bg-white/20 rounded-full accent-indigo-400 cursor-pointer hidden sm:block"
+                className="w-12 sm:w-16 h-1 bg-white/20 rounded-full accent-indigo-400 cursor-pointer hidden sm:block"
                 title="Adjust volume"
               />
             </div>
@@ -255,3 +273,4 @@ export const RadioPlayer: React.FC<RadioPlayerProps> = ({
     </div>
   );
 };
+

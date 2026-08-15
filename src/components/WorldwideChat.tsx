@@ -80,24 +80,36 @@ export const WorldwideChat: React.FC<WorldwideChatProps> = ({
 
   return (
     <>
-      {/* Mobile Chat Toggle Button */}
-      <div className="fixed bottom-24 right-4 sm:hidden z-30 pointer-events-auto">
-        <button
-          onClick={onToggleOpen}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-full glass-panel-interactive text-xs font-mono-code text-white shadow-xl"
-        >
-          <MessageSquare className="w-4 h-4 text-indigo-400" />
-          <span>CHAT {isOpen ? '▼' : '▲'}</span>
-        </button>
-      </div>
+      {/* Floating Worldwide Chat Open Trigger (Visible when Chat is Closed) */}
+      {!isOpen && (
+        <div className="fixed bottom-24 sm:bottom-28 right-4 sm:right-8 z-30 pointer-events-auto animate-fade-in">
+          <button
+            onClick={onToggleOpen}
+            className="flex items-center gap-2.5 px-4 py-2.5 sm:py-3 rounded-full glass-panel-interactive text-xs font-mono-code text-white shadow-2xl border border-white/20 hover:border-indigo-400/50 hover:scale-105 active:scale-95 transition-all group"
+            title="Open Worldwide Live Chat"
+          >
+            <div className="relative">
+              <MessageSquare className="w-4 h-4 text-indigo-400 group-hover:text-indigo-300" />
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400" />
+            </div>
+            <span className="font-bold tracking-wider text-slate-100">WORLDWIDE CHAT</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+              LIVE
+            </span>
+          </button>
+        </div>
+      )}
 
-      {/* Main Chat Container */}
+      {/* Main Chat Container (Opens / Closes smoothly on Desktop & Mobile) */}
       <div
         className={`fixed top-20 sm:top-24 bottom-24 sm:bottom-28 right-4 sm:right-8 w-[calc(100vw-2rem)] sm:w-80 md:w-88 glass-panel rounded-3xl p-4 sm:p-5 flex flex-col z-30 pointer-events-auto transition-all duration-300 ${
-          isOpen ? 'translate-y-0 opacity-100' : 'translate-y-[120%] sm:translate-y-0 sm:opacity-100 pointer-events-none sm:pointer-events-auto'
+          isOpen
+            ? 'translate-y-0 opacity-100 scale-100 pointer-events-auto shadow-2xl'
+            : 'translate-y-[120%] sm:translate-y-12 opacity-0 scale-95 pointer-events-none'
         }`}
       >
-        {/* Header with Title & Alias badge */}
+        {/* Header with Title, Alias badge & Universal Close Button */}
         <div className="flex items-center justify-between pb-3 border-b border-white/10 flex-shrink-0">
           <div>
             <div className="flex items-center gap-2">
@@ -124,12 +136,13 @@ export const WorldwideChat: React.FC<WorldwideChatProps> = ({
               <span className="truncate max-w-[80px]">{session.displayName}</span>
             </button>
 
-            {/* Mobile close button */}
+            {/* Universal Close / Minimize Button (Works on both mobile & desktop) */}
             <button
               onClick={onToggleOpen}
-              className="p-1 rounded-full text-slate-400 hover:text-white sm:hidden"
+              className="p-1.5 rounded-full bg-white/5 hover:bg-white/15 text-slate-400 hover:text-white border border-white/10 transition-colors"
+              title="Close Worldwide Chat"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>

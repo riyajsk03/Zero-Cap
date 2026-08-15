@@ -327,6 +327,49 @@ export function setTrackVolume(volume: number) {
   }
 }
 
+export function jumpToTrack(index: number) {
+  if (ytPlayer) {
+    try {
+      if (typeof ytPlayer.playVideoAt === 'function') {
+        ytPlayer.playVideoAt(index);
+      } else if (typeof ytPlayer.loadPlaylist === 'function') {
+        ytPlayer.loadPlaylist({
+          listType: 'playlist',
+          list: PLAYLIST_ID,
+          index: index,
+        });
+      }
+      setTimeout(() => extractCurrentTrackInfo(currentCallbacks), 600);
+    } catch (err) {
+      console.warn('jumpToTrack error:', err);
+    }
+  }
+}
+
+export function jumpSeconds(offset: number) {
+  if (ytPlayer) {
+    try {
+      const cur = getPlayerCurrentTime();
+      const dur = getPlayerDuration();
+      const nextTime = Math.max(0, Math.min(dur > 0 ? dur - 1 : cur + offset, cur + offset));
+      seekTrackTo(nextTime);
+    } catch {
+      // safe fallback
+    }
+  }
+}
+
+export function getPlaylistList(): string[] {
+  if (ytPlayer && ytPlayer.getPlaylist) {
+    try {
+      return ytPlayer.getPlaylist() || [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
 export function getPlayerCurrentTime(): number {
   if (ytPlayer && ytPlayer.getCurrentTime) {
     try {

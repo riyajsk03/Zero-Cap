@@ -1,5 +1,5 @@
 import React from 'react';
-import { Volume2, VolumeX, Sparkles, Shield, Compass } from 'lucide-react';
+import { Volume2, VolumeX, Sparkles, Shield, Instagram, MessageSquare } from 'lucide-react';
 import { LocationData, PresenceStats } from '../types';
 
 interface HeaderProps {
@@ -7,9 +7,10 @@ interface HeaderProps {
   presence: PresenceStats;
   isMuted: boolean;
   onToggleMute: () => void;
-  onOpenAtmosphere: () => void;
   onOpenRules: () => void;
   currentThemeName: string;
+  isChatOpen: boolean;
+  onToggleChat: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -17,14 +18,27 @@ export const Header: React.FC<HeaderProps> = ({
   presence,
   isMuted,
   onToggleMute,
-  onOpenAtmosphere,
   onOpenRules,
   currentThemeName,
+  isChatOpen,
+  onToggleChat,
 }) => {
   return (
     <header className="w-full px-5 py-4 sm:px-8 sm:py-6 flex items-start justify-between z-30 pointer-events-auto">
-      {/* Brand Title */}
-      <div className="flex flex-col">
+      {/* Brand Title & Left-Corner Instagram Link */}
+      <div className="flex flex-col items-start">
+        {/* Top-Left Instagram Link */}
+        <a
+          href="https://www.instagram.com/xx__spidey___?igsh=MW14dnJheWoxMXVyYQ=="
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 px-3 py-1 mb-1.5 rounded-full bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-indigo-500/20 hover:from-pink-500/30 hover:via-purple-500/30 hover:to-indigo-500/30 border border-pink-500/30 text-[11px] font-mono-code text-pink-200 hover:text-white transition-all shadow-sm group"
+          title="Connect with xx__spidey___ on Instagram"
+        >
+          <Instagram className="w-3.5 h-3.5 text-pink-400 group-hover:scale-110 transition-transform" />
+          <span className="font-semibold tracking-wide">@xx__spidey___</span>
+        </a>
+
         <h1 className="text-3xl sm:text-5xl font-extrabold tracking-[-0.04em] font-display text-white glow-title flex items-center gap-3">
           ZERO CAP
         </h1>
@@ -60,17 +74,35 @@ export const Header: React.FC<HeaderProps> = ({
           </span>
         </div>
 
-        {/* Atmosphere & Sound Control Actions */}
+        {/* Automated System Atmosphere, Chat & Sound Controls */}
         <div className="flex items-center gap-2">
-          {/* Atmosphere Preset Selector Button */}
+          {/* Worldwide Chat Toggle Button in Header */}
           <button
-            onClick={onOpenAtmosphere}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full glass-panel-interactive text-xs font-mono-code text-indigo-200"
-            title="Atmosphere & Weather Settings"
+            onClick={onToggleChat}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono-code transition-all shadow-sm ${
+              isChatOpen
+                ? 'bg-indigo-600/80 text-white border border-indigo-400/50'
+                : 'glass-panel-interactive text-indigo-200 hover:text-white'
+            }`}
+            title={isChatOpen ? 'Close Worldwide Chat' : 'Open Worldwide Chat'}
           >
-            <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-            <span className="hidden md:inline text-[11px]">{currentThemeName}</span>
+            <MessageSquare className="w-3.5 h-3.5 text-indigo-400" />
+            <span className="hidden md:inline text-[11px] font-medium">
+              {isChatOpen ? 'Hide Chat' : 'Live Chat'}
+            </span>
           </button>
+
+          {/* System Atmosphere Dynamic Read-only Badge */}
+          <div
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-mono-code text-indigo-200/90 shadow-sm cursor-default"
+            title="Atmosphere is automatically synchronized to your local time, weather & place."
+          >
+            <Sparkles className="w-3.5 h-3.5 text-indigo-400 animate-pulse" />
+            <span className="text-[11px] font-medium text-slate-300">
+              <span className="hidden sm:inline text-indigo-300/60 mr-1">AUTO:</span>
+              {currentThemeName}
+            </span>
+          </div>
 
           {/* Sound Synthesizer Mute Toggle */}
           <button

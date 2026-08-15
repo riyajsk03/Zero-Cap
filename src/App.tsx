@@ -5,7 +5,6 @@ import { NightSceneCanvas } from './components/NightSceneCanvas';
 import { RadioPlayer } from './components/RadioPlayer';
 import { WorldwideChat } from './components/WorldwideChat';
 import { QuoteRotator } from './components/QuoteRotator';
-import { AtmosphereSettingsModal } from './components/AtmosphereSettingsModal';
 import { ChangeNameModal } from './components/ChangeNameModal';
 import { CommunityRulesModal } from './components/CommunityRulesModal';
 import { IntroScreen } from './components/IntroScreen';
@@ -18,7 +17,12 @@ import {
   TimeSlot,
   WeatherType,
 } from './types';
-import { getCoarseLocation, getCurrentTimeSlot, getEstimatedWeather } from './services/location';
+import {
+  getCoarseLocation,
+  getCurrentTimeSlot,
+  getEstimatedWeather,
+  fetchLiveWeatherForLocation,
+} from './services/location';
 import { resolveAtmosphere } from './services/atmosphereConfig';
 import {
   initYouTubePlayer,
@@ -29,22 +33,23 @@ import { RealtimeChatEngine } from './services/chatStore';
 import { soundSynth } from './services/audioSynth';
 
 export default function App() {
-  // 1. Core State
+  // 1. Core State - Atmosphere is completely automated by system
   const [hasEntered, setHasEntered] = useState(false);
   const [location, setLocation] = useState<LocationData>(getCoarseLocation());
   const [timeSlot, setTimeSlot] = useState<TimeSlot>(getCurrentTimeSlot());
   const [weather, setWeather] = useState<WeatherType>(getEstimatedWeather());
-  const [atmosphereType, setAtmosphereType] = useState<AtmosphereType>('AUTO');
+  const atmosphereType: AtmosphereType = 'AUTO';
   
   // Audio & Settings
   const [isAudioMuted, setIsAudioMuted] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState(false);
-  const [filmGrain, setFilmGrain] = useState(true);
-  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [reducedMotion] = useState(false);
+  const [filmGrain] = useState(true);
+  const [isChatOpen, setIsChatOpen] = useState(
+    typeof window !== 'undefined' ? window.innerWidth >= 640 : true
+  );
   const [showVideoFeed, setShowVideoFeed] = useState(false);
 
-  // Modals
-  const [isAtmosphereModalOpen, setIsAtmosphereModalOpen] = useState(false);
+  // Modals (User Name & Community Rules)
   const [isNameModalOpen, setIsNameModalOpen] = useState(false);
   const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
 
@@ -64,18 +69,23 @@ export default function App() {
   const chatEngine = useMemo(() => new RealtimeChatEngine(location), [location]);
   const [presence, setPresence] = useState<PresenceStats>(chatEngine.getPresence());
 
-  // Derived Atmosphere Theme
+  // Derived Atmosphere Theme - Automatically synchronized
   const currentAtmosphere = useMemo(() => {
     return resolveAtmosphere(atmosphereType, timeSlot, weather);
   }, [atmosphereType, timeSlot, weather]);
 
-  // Update Clock & TimeSlot every 30 seconds
+  // Update Clock, TimeSlot & Live Weather automatically
   useEffect(() => {
-    const timer = setInterval(() => {
+    const syncRealEnvironment = async () => {
       const loc = getCoarseLocation();
       setLocation(loc);
       setTimeSlot(getCurrentTimeSlot());
-    }, 30000);
+      const liveWeather = await fetchLiveWeatherForLocation(loc.timezone);
+      setWeather(liveWeather);
+    };
+
+    syncRealEnvironment();
+    const timer = setInterval(syncRealEnvironment, 30000);
 
     return () => clearInterval(timer);
   }, []);
@@ -198,15 +208,16 @@ export default function App() {
         reducedMotion={reducedMotion}
       />
 
-      {/* Top Header Navigation */}
+      {/* Top Header Navigation with System-Controlled Atmosphere Badge & Controls */}
       <Header
         location={location}
         presence={presence}
         isMuted={isAudioMuted}
         onToggleMute={handleToggleMute}
-        onOpenAtmosphere={() => setIsAtmosphereModalOpen(true)}
         onOpenRules={() => setIsRulesModalOpen(true)}
         currentThemeName={currentAtmosphere.name}
+        isChatOpen={isChatOpen}
+        onToggleChat={() => setIsChatOpen((prev) => !prev)}
       />
 
       {/* Midground Left: Rotating Nostalgic Perspectives */}
@@ -233,7 +244,7 @@ export default function App() {
         onToggleOpen={() => setIsChatOpen(!isChatOpen)}
       />
 
-      {/* Bottom Floating Glassmorphism ZERO CAP Radio Player */}
+      {/* Bottom Floating Glassmorphism ZERO CAP Radio Player with Skip & Song Jump */}
       <div className="relative z-30 flex flex-col items-center">
         <RadioPlayer
           currentTrack={currentTrack}
@@ -255,25 +266,6 @@ export default function App() {
         </div>
       </div>
 
-      {/* Atmosphere Settings Modal */}
-      {isAtmosphereModalOpen && (
-        <AtmosphereSettingsModal
-          currentType={atmosphereType}
-          currentWeather={weather}
-          onSelectType={(type) => {
-            setAtmosphereType(type);
-          }}
-          onSelectWeather={(w) => {
-            setWeather(w);
-          }}
-          reducedMotion={reducedMotion}
-          onToggleReducedMotion={() => setReducedMotion(!reducedMotion)}
-          filmGrain={filmGrain}
-          onToggleFilmGrain={() => setFilmGrain(!filmGrain)}
-          onClose={() => setIsAtmosphereModalOpen(false)}
-        />
-      )}
-
       {/* Change Name Modal */}
       {isNameModalOpen && (
         <ChangeNameModal
@@ -291,3 +283,4 @@ export default function App() {
     </div>
   );
 }
+
