@@ -11,17 +11,23 @@ class AudioSynthesizer {
   private masterGain: GainNode | null = null;
 
   private initContext() {
-    if (!this.ctx) {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      if (AudioCtx) {
-        this.ctx = new AudioCtx();
-        this.masterGain = this.ctx.createGain();
-        this.masterGain.gain.setValueAtTime(0.6, this.ctx.currentTime);
-        this.masterGain.connect(this.ctx.destination);
+    try {
+      if (!this.ctx) {
+        const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+        if (AudioCtx) {
+          this.ctx = new AudioCtx();
+          this.masterGain = this.ctx.createGain();
+          this.masterGain.gain.setValueAtTime(0.6, this.ctx.currentTime);
+          this.masterGain.connect(this.ctx.destination);
+        }
       }
-    }
-    if (this.ctx && this.ctx.state === 'suspended') {
-      this.ctx.resume();
+      if (this.ctx && this.ctx.state === 'suspended') {
+        this.ctx.resume().catch(() => {
+          // Autoplay policy safe catch
+        });
+      }
+    } catch {
+      // safe fallback
     }
   }
 

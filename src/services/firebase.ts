@@ -68,20 +68,19 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
     operationType,
     path,
   };
-  console.error('Firestore Error: ', JSON.stringify(errInfo));
-  throw new Error(JSON.stringify(errInfo));
+  console.warn('Firestore Operation Note: ', JSON.stringify(errInfo));
+  return errInfo;
 }
 
 // Test connection on boot
 export async function testFirestoreConnection(): Promise<boolean> {
   try {
-    await getDocFromServer(doc(db, 'test', 'connection'));
+    await getDocFromServer(doc(db, 'messages', 'ping'));
     return true;
   } catch (error) {
     if (error instanceof Error && error.message.includes('the client is offline')) {
       console.warn('Firebase client is offline, check configuration.');
     }
-    // We catch and return false rather than unhandled rejection so the app stays resilient
     return false;
   }
 }
@@ -229,11 +228,11 @@ export function subscribeToPresence(
   return onSnapshot(
     collection(db, path),
     (snapshot) => {
-      const activeCount = snapshot.size;
+      const activeCount = Math.max(1, snapshot.size);
       onPresenceUpdate({
-        totalLive: Math.max(1240, 1200 + activeCount * 7),
-        cityLive: Math.max(18, Math.min(activeCount, 85)),
-        countryLive: Math.max(95, Math.min(activeCount * 3, 420)),
+        totalLive: activeCount,
+        cityLive: activeCount,
+        countryLive: activeCount,
       });
     },
     (error) => {

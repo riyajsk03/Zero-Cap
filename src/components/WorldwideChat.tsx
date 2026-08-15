@@ -74,11 +74,8 @@ export const WorldwideChat: React.FC<WorldwideChatProps> = ({
     }
   };
 
-  const handleReport = (messageId: string, authorName: string) => {
-    const ok = window.confirm(`Report message from ${authorName} for violating vibe rules?`);
-    if (ok) {
-      chatEngine.reportMessage(messageId);
-    }
+  const handleReport = (messageId: string) => {
+    chatEngine.reportMessage(messageId);
   };
 
   return (
@@ -220,7 +217,7 @@ export const WorldwideChat: React.FC<WorldwideChatProps> = ({
                       </span>
                       {!isMe && !item.reported && (
                         <button
-                          onClick={() => handleReport(item.id, item.displayName)}
+                          onClick={() => handleReport(item.id)}
                           className="text-slate-500 hover:text-red-400 text-[9px]"
                           title="Report message"
                         >

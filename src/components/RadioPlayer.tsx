@@ -7,13 +7,10 @@ import {
   Volume2,
   VolumeX,
   Radio,
-  Music,
   RotateCw,
-  Sparkles,
+  Tv,
 } from 'lucide-react';
 import {
-  playTrack,
-  pauseTrack,
   nextTrack,
   prevTrack,
   seekTrackTo,
@@ -29,6 +26,8 @@ interface RadioPlayerProps {
   onTogglePlay: () => void;
   hasError: boolean;
   onRetry: () => void;
+  showVideoFeed?: boolean;
+  onToggleVideoFeed?: () => void;
 }
 
 export const RadioPlayer: React.FC<RadioPlayerProps> = ({
@@ -37,12 +36,14 @@ export const RadioPlayer: React.FC<RadioPlayerProps> = ({
   onTogglePlay,
   hasError,
   onRetry,
+  showVideoFeed = false,
+  onToggleVideoFeed,
 }) => {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(80);
   const [isVolumeMuted, setIsVolumeMuted] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
+  const [, setIsHovered] = useState(false);
 
   // Sync track progress
   useEffect(() => {
@@ -128,7 +129,7 @@ export const RadioPlayer: React.FC<RadioPlayerProps> = ({
             </div>
 
             <h3 className="text-xs sm:text-sm font-semibold tracking-tight text-white truncate max-w-[200px] sm:max-w-xs md:max-w-md">
-              {hasError ? 'Music Signal Lost' : currentTrack.title || 'midnight memories.wav'}
+              {hasError ? 'Music Signal Lost' : currentTrack.title || 'The Power Of Words • Victory Family Church'}
             </h3>
 
             {/* Time Bar & Scrub */}
@@ -164,7 +165,7 @@ export const RadioPlayer: React.FC<RadioPlayerProps> = ({
         </div>
 
         {/* Center/Right: Playback Controls */}
-        <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-8 w-full sm:w-auto">
+        <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-6 w-full sm:w-auto">
           {hasError ? (
             <button
               onClick={onRetry}
@@ -179,7 +180,7 @@ export const RadioPlayer: React.FC<RadioPlayerProps> = ({
               <button
                 onClick={prevTrack}
                 className="p-2 text-slate-400 hover:text-white transition-colors"
-                title="Previous Track"
+                title="Previous Track in Playlist"
               >
                 <SkipBack className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
@@ -201,35 +202,53 @@ export const RadioPlayer: React.FC<RadioPlayerProps> = ({
               <button
                 onClick={nextTrack}
                 className="p-2 text-slate-400 hover:text-white transition-colors"
-                title="Next Track"
+                title="Next Track in Playlist"
               >
                 <SkipForward className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
           )}
 
-          {/* Volume Control */}
-          <div className="flex items-center gap-2 border-l border-white/10 pl-4 sm:pl-6">
-            <button
-              onClick={toggleVolumeMute}
-              className="p-1 text-slate-400 hover:text-slate-200 transition-colors"
-              title={isVolumeMuted ? 'Unmute Player' : 'Mute Player'}
-            >
-              {isVolumeMuted || volume === 0 ? (
-                <VolumeX className="w-4 h-4 text-red-400" />
-              ) : (
-                <Volume2 className="w-4 h-4 text-slate-300" />
-              )}
-            </button>
-            <input
-              type="range"
-              min={0}
-              max={100}
-              value={isVolumeMuted ? 0 : volume}
-              onChange={handleVolumeChange}
-              className="w-16 sm:w-20 h-1 bg-white/20 rounded-full accent-indigo-400 cursor-pointer hidden sm:block"
-              title="Adjust volume"
-            />
+          {/* Auxiliary Tools: Video PIP + Volume */}
+          <div className="flex items-center gap-2 border-l border-white/10 pl-3 sm:pl-5">
+            {/* Toggle Video Feed PIP */}
+            {onToggleVideoFeed && (
+              <button
+                onClick={onToggleVideoFeed}
+                className={`p-1.5 rounded-lg text-xs transition-colors ${
+                  showVideoFeed
+                    ? 'bg-indigo-500/30 text-indigo-300 border border-indigo-500/40'
+                    : 'text-slate-400 hover:text-white hover:bg-white/5'
+                }`}
+                title={showVideoFeed ? 'Hide Video Feed' : 'Show YouTube Video Feed (PIP)'}
+              >
+                <Tv className="w-4 h-4" />
+              </button>
+            )}
+
+            {/* Volume Control */}
+            <div className="flex items-center gap-1.5 ml-1">
+              <button
+                onClick={toggleVolumeMute}
+                className="p-1 text-slate-400 hover:text-slate-200 transition-colors"
+                title={isVolumeMuted ? 'Unmute Player' : 'Mute Player'}
+              >
+                {isVolumeMuted || volume === 0 ? (
+                  <VolumeX className="w-4 h-4 text-red-400" />
+                ) : (
+                  <Volume2 className="w-4 h-4 text-slate-300" />
+                )}
+              </button>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={isVolumeMuted ? 0 : volume}
+                onChange={handleVolumeChange}
+                className="w-14 sm:w-18 h-1 bg-white/20 rounded-full accent-indigo-400 cursor-pointer hidden sm:block"
+                title="Adjust volume"
+              />
+            </div>
           </div>
         </div>
       </div>

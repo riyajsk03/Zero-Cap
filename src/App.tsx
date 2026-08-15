@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { X, Tv } from 'lucide-react';
 import { Header } from './components/Header';
 import { NightSceneCanvas } from './components/NightSceneCanvas';
 import { RadioPlayer } from './components/RadioPlayer';
@@ -40,6 +41,7 @@ export default function App() {
   const [reducedMotion, setReducedMotion] = useState(false);
   const [filmGrain, setFilmGrain] = useState(true);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [showVideoFeed, setShowVideoFeed] = useState(false);
 
   // Modals
   const [isAtmosphereModalOpen, setIsAtmosphereModalOpen] = useState(false);
@@ -51,9 +53,9 @@ export default function App() {
   const [playerError, setPlayerError] = useState(false);
   const [currentTrack, setCurrentTrack] = useState<SongTrack>({
     id: 'track_1',
-    title: 'midnight memories.wav',
-    artist: 'Zero Cap Radio',
-    duration: 184,
+    title: 'The Power Of Words • Victory Family Church',
+    artist: 'PLDQ-zY2P3ImU Playlist',
+    duration: 0,
     playlistIndex: 1,
     totalTracks: 12,
   });
@@ -152,9 +154,30 @@ export default function App() {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-[#050508] text-white flex flex-col justify-between select-none">
-      {/* Hidden YouTube IFrame Container */}
-      <div className="absolute top-0 left-0 w-1 h-1 opacity-0 pointer-events-none overflow-hidden">
-        <div id="yt-player-container" />
+      {/* YouTube IFrame Player Container (Active in Viewport + PIP Video Feed Toggle) */}
+      <div
+        className={`fixed transition-all duration-300 ${
+          showVideoFeed
+            ? 'z-40 bottom-24 right-4 sm:right-8 w-72 sm:w-80 h-44 sm:h-48 rounded-2xl overflow-hidden border border-white/20 shadow-2xl bg-black pointer-events-auto opacity-100 scale-100'
+            : 'z-0 -left-[9999px] top-0 w-80 h-44 pointer-events-none opacity-0'
+        }`}
+      >
+        {showVideoFeed && (
+          <div className="absolute top-2 right-2 z-10 flex items-center gap-1.5">
+            <span className="text-[9px] font-mono-code bg-black/70 px-2 py-0.5 rounded-full text-indigo-300 border border-white/10 flex items-center gap-1">
+              <Tv className="w-2.5 h-2.5" />
+              <span>LIVE FEED</span>
+            </span>
+            <button
+              onClick={() => setShowVideoFeed(false)}
+              className="p-1 rounded-full bg-black/70 hover:bg-black text-white text-xs border border-white/10"
+              title="Close video feed"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+        <div id="yt-player-container" className="w-full h-full" />
       </div>
 
       {/* Cinematic Film Grain Overlay */}
@@ -218,6 +241,8 @@ export default function App() {
           onTogglePlay={handleTogglePlay}
           hasError={playerError}
           onRetry={handleRetryMusic}
+          showVideoFeed={showVideoFeed}
+          onToggleVideoFeed={() => setShowVideoFeed(!showVideoFeed)}
         />
 
         {/* Nostalgic Bottom Subtext */}
