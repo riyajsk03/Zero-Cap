@@ -1,0 +1,6 @@
+{
+  "name": "ZERO CAP - Place for Gen Z",
+  "description": "An immersive nighttime gathering space for Gen Z. Listen to a shared YouTube playlist under a giant animated tree with an anonymous listener and sleeping cat, watch the falling leaves, and connect in worldwide ambient chat.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

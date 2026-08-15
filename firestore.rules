@@ -1,0 +1,64 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidMessage(data) {
+      return data.keys().hasAll(['sessionId', 'displayName', 'message', 'country', 'city', 'createdAt']) &&
+             data.sessionId is string && data.sessionId.size() <= 100 &&
+             data.displayName is string && data.displayName.size() >= 2 && data.displayName.size() <= 30 &&
+             data.message is string && data.message.size() >= 1 && data.message.size() <= 200 &&
+             data.country is string && data.country.size() <= 100 &&
+             data.city is string && data.city.size() <= 100 &&
+             (!('countryCode' in data) || (data.countryCode is string && data.countryCode.size() <= 10)) &&
+             (!('isSystem' in data) || data.isSystem is bool) &&
+             (!('reported' in data) || data.reported is bool);
+    }
+
+    function isValidPresence(data) {
+      return data.keys().hasAll(['sessionId', 'displayName', 'city', 'country', 'lastSeen']) &&
+             data.sessionId is string && data.sessionId.size() <= 100 &&
+             data.displayName is string && data.displayName.size() <= 30 &&
+             data.city is string && data.city.size() <= 100 &&
+             data.country is string && data.country.size() <= 100;
+    }
+
+    // Worldwide public chat stream
+    match /messages/{messageId} {
+      allow read: if true;
+      allow create: if isValidId(messageId) &&
+                       isValidMessage(incoming()) &&
+                       incoming().createdAt == request.time;
+      allow update: if isValidId(messageId) &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['reported']) &&
+                       incoming().reported == true;
+      allow delete: if false;
+    }
+
+    // Worldwide active presence beacons
+    match /presence/{sessionId} {
+      allow read: if true;
+      allow create, update: if isValidId(sessionId) &&
+                               isValidPresence(incoming()) &&
+                               incoming().lastSeen == request.time;
+      allow delete: if false;
+    }
+  }
+}

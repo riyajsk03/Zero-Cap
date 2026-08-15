@@ -1,0 +1,100 @@
+{
+  "entities": {
+    "Message": {
+      "title": "Message",
+      "description": "A live worldwide chat message from a listener on ZERO CAP radio",
+      "type": "object",
+      "properties": {
+        "sessionId": {
+          "type": "string",
+          "description": "Unique browser session identifier",
+          "maxLength": 100
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Anonymous alias or username",
+          "minLength": 2,
+          "maxLength": 30
+        },
+        "message": {
+          "type": "string",
+          "description": "Message content broadcast to listeners",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "country": {
+          "type": "string",
+          "description": "Country of origin",
+          "maxLength": 100
+        },
+        "city": {
+          "type": "string",
+          "description": "City of origin",
+          "maxLength": 100
+        },
+        "countryCode": {
+          "type": "string",
+          "description": "Two letter country code",
+          "maxLength": 10
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp"
+        },
+        "reported": {
+          "type": "boolean",
+          "description": "Flag if message was reported"
+        },
+        "isSystem": {
+          "type": "boolean",
+          "description": "Whether this is an automated system event"
+        }
+      },
+      "required": ["sessionId", "displayName", "message", "country", "city", "createdAt"]
+    },
+    "Presence": {
+      "title": "Presence",
+      "description": "Live active listener beacon in the digital sanctuary",
+      "type": "object",
+      "properties": {
+        "sessionId": {
+          "type": "string",
+          "description": "Session identifier",
+          "maxLength": 100
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Current alias",
+          "maxLength": 30
+        },
+        "city": {
+          "type": "string",
+          "description": "Listener city",
+          "maxLength": 100
+        },
+        "country": {
+          "type": "string",
+          "description": "Listener country",
+          "maxLength": 100
+        },
+        "lastSeen": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last heartbeat timestamp"
+        }
+      },
+      "required": ["sessionId", "displayName", "city", "country", "lastSeen"]
+    }
+  },
+  "firestore": {
+    "/messages/{messageId}": {
+      "schema": "Message",
+      "description": "Public worldwide chat stream messages"
+    },
+    "/presence/{sessionId}": {
+      "schema": "Presence",
+      "description": "Active heartbeat presence records"
+    }
+  }
+}
