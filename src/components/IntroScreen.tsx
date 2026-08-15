@@ -14,12 +14,13 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ location, onEnter }) =
   useEffect(() => {
     const timer = setInterval(() => {
       setProgress((prev) => {
-        if (prev >= 100) {
+        const next = Math.min(100, prev + Math.floor(Math.random() * 15 + 10));
+        if (next >= 100) {
           clearInterval(timer);
           setReady(true);
           return 100;
         }
-        return prev + Math.floor(Math.random() * 15 + 10);
+        return next;
       });
     }, 180);
 
@@ -27,8 +28,10 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ location, onEnter }) =
   }, []);
 
   const totalBlocks = 18;
-  const filledBlocks = Math.floor((progress / 100) * totalBlocks);
-  const progressBlocks = '█'.repeat(filledBlocks) + '░'.repeat(totalBlocks - filledBlocks);
+  const clampedProgress = Math.max(0, Math.min(100, progress));
+  const filledBlocks = Math.max(0, Math.min(totalBlocks, Math.floor((clampedProgress / 100) * totalBlocks)));
+  const emptyBlocks = Math.max(0, totalBlocks - filledBlocks);
+  const progressBlocks = '█'.repeat(filledBlocks) + '░'.repeat(emptyBlocks);
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center p-6 bg-[#050508] text-white select-none">

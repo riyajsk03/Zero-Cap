@@ -4,6 +4,7 @@
  */
 
 export const PLAYLIST_ID = 'PLDQ-zY2P3ImU';
+export const DEFAULT_VIDEO_ID = '2pdkKo-Cj5Y';
 
 declare global {
   interface Window {
@@ -70,6 +71,7 @@ export function initYouTubePlayer(
           ytPlayer = new window.YT.Player(elementId, {
             height: '100%',
             width: '100%',
+            videoId: DEFAULT_VIDEO_ID,
             playerVars: {
               listType: 'playlist',
               list: PLAYLIST_ID,
@@ -90,12 +92,17 @@ export function initYouTubePlayer(
                 callbacks.onReady?.();
                 // Set volume to comfortable level
                 event.target.setVolume(80);
+                extractCurrentTrackInfo(callbacks);
                 resolve();
               },
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onStateChange: (event: any) => {
                 callbacks.onStateChange?.(event.data);
-                if (event.data === window.YT.PlayerState.PLAYING) {
+                if (
+                  event.data === window.YT.PlayerState.PLAYING ||
+                  event.data === window.YT.PlayerState.BUFFERING ||
+                  event.data === window.YT.PlayerState.CUED
+                ) {
                   extractCurrentTrackInfo(callbacks);
                 }
               },
