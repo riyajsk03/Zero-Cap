@@ -6,6 +6,7 @@ import {
   SkipForward,
   RotateCcw,
   RotateCw,
+  Shuffle,
   Volume2,
   VolumeX,
   Radio,
@@ -17,6 +18,7 @@ import {
   seekTrackTo,
   setTrackVolume,
   jumpSeconds,
+  playRandomTrack,
   getPlayerCurrentTime,
   getPlayerDuration,
 } from '../services/youtube';
@@ -118,8 +120,9 @@ export const RadioPlayer: React.FC<RadioPlayerProps> = ({
           {/* Track Labels & Progress */}
           <div className="flex flex-col min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="text-[9px] sm:text-[10px] font-bold font-mono-code text-indigo-400 tracking-[0.2em] uppercase">
-                ZERO CAP RADIO
+              <span className="inline-flex items-center gap-1.5 text-[9px] sm:text-[10px] font-bold font-mono-code text-indigo-400 tracking-[0.2em] uppercase">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                LIVE PLAYER
               </span>
               <span className="text-[9px] font-mono-code text-slate-400/60 hidden md:inline">
                 • TRACK {String(currentTrack.playlistIndex || 1).padStart(2, '0')} / {totalTracksCount}
@@ -174,6 +177,15 @@ export const RadioPlayer: React.FC<RadioPlayerProps> = ({
             </button>
           ) : (
             <div className="flex items-center gap-1 sm:gap-2.5 mx-auto sm:mx-0">
+              {/* Random / Shuffle Track Button */}
+              <button
+                onClick={playRandomTrack}
+                className="p-2 text-slate-400 hover:text-indigo-300 hover:bg-white/5 rounded-full transition-all"
+                title="Play Random Song from Playlist"
+              >
+                <Shuffle className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+              </button>
+
               {/* Previous Song Skip */}
               <button
                 onClick={prevTrack}

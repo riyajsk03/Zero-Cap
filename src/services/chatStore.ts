@@ -7,6 +7,7 @@ import {
   subscribeToPresence,
   testFirestoreConnection,
 } from './firebase';
+import { fetchClientPublicIp } from './location';
 
 const ADJECTIVES = [
   'night', 'chai', 'ghost', 'moon', 'afterhours', 'lofi', 'tokyo', 'neon',
@@ -60,6 +61,16 @@ export class RealtimeChatEngine {
       this.saveSession();
     }
 
+    // Attach IP identification to session identifier if possible for distinct visitor tracking
+    fetchClientPublicIp().then((ip) => {
+      if (ip && !this.session.sessionId.includes('ip_')) {
+        const cleanIp = ip.replace(/[^a-zA-Z0-9]/g, '_');
+        this.session.sessionId = `ip_${cleanIp}_${this.session.sessionId.slice(0, 20)}`;
+        this.saveSession();
+        this.sendHeartbeat();
+      }
+    }).catch(() => {});
+
     this.initFirebaseSync();
   }
 
@@ -80,17 +91,48 @@ export class RealtimeChatEngine {
     }
   }
 
-  private async initFirebaseSync() {
-    // 1. Test connection to Firestore on startup
-    testFirestoreConnection().catch(() => {});
+  public updateLocation(location: LocationData) {
+    if (
+      this.session.city !== location.city ||
+      this.session.country !== location.country ||
+      this.session.countryCode !== location.countryCode
+    ) {
+      this.session.city = location.city;
+      this.session.country = location.country;
+      this.session.countryCode = location.countryCode;
+      this.saveSession();
+      this.sendHeartbeat();
+      
+      // Resubscribe presence with new location boundaries
+      if (this.unsubPresence) {
+        this.unsubPresence();
+        this.unsubPresence = subscribeToPresence(
+          this.session.city,
+          this.session.country,
+          (newStats) => {
+            this.presence = newStats;
+            this.notify();
+          }
+        );
+      }
+    }
+  }
 
-    // 2. Send immediate initial presence beacon
+  private sendHeartbeat() {
     updateFirestorePresence({
       sessionId: this.session.sessionId,
       displayName: this.session.displayName,
       city: this.session.city,
       country: this.session.country,
     }).catch(() => {});
+  }
+
+  private async initFirebaseSync() {
+    // 1. Test connection to Firestore on startup
+    testFirestoreConnection().catch(() => {});
+
+    // 2. Send immediate initial presence beacon
+    this.sendHeartbeat();
 
     // 3. Subscribe to real-time live messages from Firestore
     this.unsubFirestore = subscribeToLiveMessages(
@@ -103,21 +145,20 @@ export class RealtimeChatEngine {
       }
     );
 
-    // 4. Subscribe to presence updates from Firestore
-    this.unsubPresence = subscribeToPresence((newStats) => {
-      this.presence = newStats;
-      this.notify();
-    });
+    // 4. Subscribe to presence updates with active heartbeat filtering
+    this.unsubPresence = subscribeToPresence(
+      this.session.city,
+      this.session.country,
+      (newStats) => {
+        this.presence = newStats;
+        this.notify();
+      }
+    );
 
-    // 5. Periodic presence heartbeat every 30s
+    // 5. Periodic presence heartbeat every 25s
     this.heartbeatInterval = setInterval(() => {
-      updateFirestorePresence({
-        sessionId: this.session.sessionId,
-        displayName: this.session.displayName,
-        city: this.session.city,
-        country: this.session.country,
-      }).catch(() => {});
-    }, 30000);
+      this.sendHeartbeat();
+    }, 25000);
   }
 
   public getSession(): UserSession {
@@ -158,12 +199,7 @@ export class RealtimeChatEngine {
     this.saveSession();
 
     // Update presence on Firestore
-    updateFirestorePresence({
-      sessionId: this.session.sessionId,
-      displayName: this.session.displayName,
-      city: this.session.city,
-      country: this.session.country,
-    }).catch(() => {});
+    this.sendHeartbeat();
 
     this.notify();
     return { success: true };
@@ -188,7 +224,7 @@ export class RealtimeChatEngine {
     }
 
     this.lastMessageTime = now;
-    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     const msgId = `msg_${now}_${Math.random().toString(36).substring(2, 6)}`;
 
     const newMsg: ChatMessage = {
@@ -202,8 +238,8 @@ export class RealtimeChatEngine {
       timestamp: timeStr,
     };
 
-    // Optimistic local preview
-    this.messages = [...this.messages, newMsg].slice(-80);
+    // Optimistic local preview (up to 150 messages limit rule integrated)
+    this.messages = [...this.messages, newMsg].slice(-150);
     this.notify();
 
     // Persist to Firebase Firestore

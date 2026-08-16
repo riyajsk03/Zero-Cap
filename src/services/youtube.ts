@@ -28,6 +28,7 @@ let isScriptLoaded = false;
 let isInitializing = false;
 let isPlayerReady = false;
 let pendingPlay = false;
+let initialRandomIndex = Math.floor(Math.random() * 12);
 const readyCallbacks: (() => void)[] = [];
 let currentCallbacks: PlayerStateCallback = {};
 let syncInterval: ReturnType<typeof setInterval> | null = null;
@@ -147,10 +148,14 @@ export function initYouTubePlayer(
                 callbacks.onReady?.();
                 try {
                   event.target.setVolume(85);
+                  // Cue a random song from the playlist initially
+                  const playlist = event.target.getPlaylist?.() || [];
+                  const count = playlist.length > 0 ? playlist.length : 12;
+                  initialRandomIndex = Math.floor(Math.random() * count);
                   event.target.cuePlaylist({
                     listType: 'playlist',
                     list: PLAYLIST_ID,
-                    index: 0,
+                    index: initialRandomIndex,
                     startSeconds: 0,
                   });
                 } catch (e) {
@@ -243,14 +248,14 @@ export function playTrack() {
       if (typeof ytPlayer.playVideo === 'function') {
         ytPlayer.playVideo();
       }
-      // If still not started, explicitly load playlist
+      // If still not started, explicitly load playlist with the random index
       setTimeout(() => {
         const newState = ytPlayer.getPlayerState?.();
         if (newState === -1 || newState === 5) {
           ytPlayer.loadPlaylist?.({
             listType: 'playlist',
             list: PLAYLIST_ID,
-            index: 0,
+            index: initialRandomIndex,
           });
         }
       }, 300);
@@ -265,11 +270,24 @@ export function playTrack() {
         ytPlayer.loadPlaylist({
           listType: 'playlist',
           list: PLAYLIST_ID,
-          index: 0,
+          index: initialRandomIndex,
         });
       }
     } catch {
       // safe fallback
+    }
+  }
+}
+
+export function playRandomTrack() {
+  if (ytPlayer) {
+    try {
+      const playlist = ytPlayer.getPlaylist?.() || [];
+      const total = playlist.length > 0 ? playlist.length : 12;
+      const randIdx = Math.floor(Math.random() * total);
+      jumpToTrack(randIdx);
+    } catch {
+      nextTrack();
     }
   }
 }

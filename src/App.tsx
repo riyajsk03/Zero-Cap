@@ -6,6 +6,7 @@ import { RadioPlayer } from './components/RadioPlayer';
 import { WorldwideChat } from './components/WorldwideChat';
 import { QuoteRotator } from './components/QuoteRotator';
 import { ChangeNameModal } from './components/ChangeNameModal';
+import { ChangeLocationModal } from './components/ChangeLocationModal';
 import { CommunityRulesModal } from './components/CommunityRulesModal';
 import { IntroScreen } from './components/IntroScreen';
 
@@ -49,8 +50,9 @@ export default function App() {
   );
   const [showVideoFeed, setShowVideoFeed] = useState(false);
 
-  // Modals (User Name & Community Rules)
+  // Modals (User Name, Location & Community Rules)
   const [isNameModalOpen, setIsNameModalOpen] = useState(false);
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
 
   // Music Player State
@@ -65,8 +67,8 @@ export default function App() {
     totalTracks: 12,
   });
 
-  // Chat Engine Instance
-  const chatEngine = useMemo(() => new RealtimeChatEngine(location), [location]);
+  // Chat Engine Instance (stable single instance)
+  const chatEngine = useMemo(() => new RealtimeChatEngine(getCoarseLocation()), []);
   const [presence, setPresence] = useState<PresenceStats>(chatEngine.getPresence());
 
   // Derived Atmosphere Theme - Automatically synchronized
@@ -74,21 +76,22 @@ export default function App() {
     return resolveAtmosphere(atmosphereType, timeSlot, weather);
   }, [atmosphereType, timeSlot, weather]);
 
-  // Update Clock, TimeSlot & Live Weather automatically
+  // Update Clock, TimeSlot, Location & Live Weather automatically
   useEffect(() => {
     const syncRealEnvironment = async () => {
       const loc = getCoarseLocation();
       setLocation(loc);
+      chatEngine.updateLocation(loc);
       setTimeSlot(getCurrentTimeSlot());
       const liveWeather = await fetchLiveWeatherForLocation(loc.timezone);
       setWeather(liveWeather);
     };
 
     syncRealEnvironment();
-    const timer = setInterval(syncRealEnvironment, 30000);
+    const timer = setInterval(syncRealEnvironment, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [chatEngine]);
 
   // Sync Presence Stats
   useEffect(() => {
@@ -215,6 +218,7 @@ export default function App() {
         isMuted={isAudioMuted}
         onToggleMute={handleToggleMute}
         onOpenRules={() => setIsRulesModalOpen(true)}
+        onOpenLocationChange={() => setIsLocationModalOpen(true)}
         currentThemeName={currentAtmosphere.name}
         isChatOpen={isChatOpen}
         onToggleChat={() => setIsChatOpen((prev) => !prev)}
@@ -240,6 +244,7 @@ export default function App() {
         location={location}
         onOpenNameChange={() => setIsNameModalOpen(true)}
         onOpenRules={() => setIsRulesModalOpen(true)}
+        onOpenLocationChange={() => setIsLocationModalOpen(true)}
         isOpen={isChatOpen}
         onToggleOpen={() => setIsChatOpen(!isChatOpen)}
       />
@@ -271,6 +276,18 @@ export default function App() {
         <ChangeNameModal
           chatEngine={chatEngine}
           onClose={() => setIsNameModalOpen(false)}
+        />
+      )}
+
+      {/* Change City / Location Modal */}
+      {isLocationModalOpen && (
+        <ChangeLocationModal
+          currentLocation={location}
+          onLocationChanged={(newLoc) => {
+            setLocation(newLoc);
+            chatEngine.updateLocation(newLoc);
+          }}
+          onClose={() => setIsLocationModalOpen(false)}
         />
       )}
 

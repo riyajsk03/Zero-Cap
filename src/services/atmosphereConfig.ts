@@ -152,9 +152,19 @@ export function resolveAtmosphere(
     return ATMOSPHERE_THEMES[type] || ATMOSPHERE_THEMES.MIDNIGHT;
   }
 
-  // Automatic determination based on real local condition
+  // Automatic determination based on real local condition (weather + time + location)
   if (weather === 'RAIN') {
     return ATMOSPHERE_THEMES.RAIN;
+  }
+
+  if (weather === 'CLOUDY') {
+    return timeSlot === 'MORNING' || timeSlot === 'AFTERNOON'
+      ? ATMOSPHERE_THEMES.MORNING
+      : ATMOSPHERE_THEMES.SOLITUDE_DAWN;
+  }
+
+  if (weather === 'WINDY') {
+    return ATMOSPHERE_THEMES.NEON_NIGHT;
   }
 
   switch (timeSlot) {

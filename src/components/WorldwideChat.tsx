@@ -21,6 +21,7 @@ interface WorldwideChatProps {
   location: LocationData;
   onOpenNameChange: () => void;
   onOpenRules: () => void;
+  onOpenLocationChange?: () => void;
   isOpen: boolean;
   onToggleOpen: () => void;
 }
@@ -30,6 +31,7 @@ export const WorldwideChat: React.FC<WorldwideChatProps> = ({
   location,
   onOpenNameChange,
   onOpenRules,
+  onOpenLocationChange,
   isOpen,
   onToggleOpen,
 }) => {
@@ -148,7 +150,7 @@ export const WorldwideChat: React.FC<WorldwideChatProps> = ({
         </div>
 
         {/* Filter Navigation Tabs */}
-        <div className="flex items-center gap-1 my-3 p-1 rounded-xl bg-black/40 border border-white/5 flex-shrink-0">
+        <div className="flex items-center gap-1 my-2 p-1 rounded-xl bg-black/40 border border-white/5 flex-shrink-0">
           <button
             onClick={() => setFilter('WORLD')}
             className={`flex-1 py-1 px-2 rounded-lg text-[10px] font-mono-code tracking-wider uppercase transition-all ${
@@ -167,19 +169,36 @@ export const WorldwideChat: React.FC<WorldwideChatProps> = ({
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            COUNTRY
+            {location.countryCode || 'COUNTRY'}
           </button>
           <button
             onClick={() => setFilter('CITY')}
-            className={`flex-1 py-1 px-2 rounded-lg text-[10px] font-mono-code tracking-wider uppercase transition-all ${
+            className={`flex-1 py-1 px-2 rounded-lg text-[10px] font-mono-code tracking-wider uppercase transition-all truncate ${
               filter === 'CITY'
                 ? 'bg-indigo-600/50 text-white font-bold shadow-sm'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
+            title={`Filter to ${location.city}`}
           >
-            CITY 📍
+            {location.city || 'CITY'} 📍
           </button>
         </div>
+
+        {/* Quick Location info & switch */}
+        {onOpenLocationChange && (
+          <div className="flex items-center justify-between px-1 pb-2 text-[9px] font-mono-code text-slate-400/80 flex-shrink-0">
+            <span className="flex items-center gap-1">
+              <MapPin className="w-2.5 h-2.5 text-indigo-400" />
+              <span>{location.city}, {location.countryCode}</span>
+            </span>
+            <button
+              onClick={onOpenLocationChange}
+              className="text-indigo-300 hover:text-white underline decoration-dotted transition-colors cursor-pointer"
+            >
+              change city
+            </button>
+          </div>
+        )}
 
         {/* Live Message Stream */}
         <div className="flex-1 overflow-y-auto space-y-3.5 pr-1 py-1">
@@ -206,32 +225,34 @@ export const WorldwideChat: React.FC<WorldwideChatProps> = ({
               return (
                 <div
                   key={item.id}
-                  className={`group flex flex-col space-y-1 ${
-                    item.reported ? 'opacity-30' : 'opacity-90'
-                  }`}
+                  className={`group flex flex-col space-y-1.5 p-2 rounded-xl transition-colors ${
+                    isMe ? 'bg-indigo-500/[0.06] border border-indigo-500/10' : 'hover:bg-white/[0.02]'
+                  } ${item.reported ? 'opacity-30' : 'opacity-100'}`}
                 >
-                  <div className="flex items-baseline justify-between">
-                    <div className="flex items-baseline gap-1.5">
+                  <div className="flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
+                    <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
                       <span
                         className={`text-[11px] font-mono-code font-bold tracking-tight ${
                           isMe ? 'text-indigo-300' : 'text-slate-200'
                         }`}
                       >
                         {item.displayName}
+                        {isMe && <span className="ml-1 text-[9px] text-indigo-400/80 font-normal">(you)</span>}
                       </span>
-                      <span className="text-[9px] font-mono-code text-slate-400/50 uppercase">
-                        · {item.city}
+                      <span className="inline-flex items-center gap-0.5 text-[9px] font-mono-code text-indigo-300/80 bg-indigo-500/10 px-1.5 py-0.5 rounded border border-indigo-500/20">
+                        <span className="text-[8px]">📍</span>
+                        <span>{item.city}{item.countryCode ? `, ${item.countryCode}` : (item.country ? `, ${item.country}` : '')}</span>
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <span className="text-[8px] font-mono-code text-slate-500">
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <span className="text-[9px] font-mono-code text-slate-400 font-medium">
                         {item.timestamp}
                       </span>
                       {!isMe && !item.reported && (
                         <button
                           onClick={() => handleReport(item.id)}
-                          className="text-slate-500 hover:text-red-400 text-[9px]"
+                          className="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-red-400 text-[9px] p-0.5 transition-opacity"
                           title="Report message"
                         >
                           <Flag className="w-2.5 h-2.5" />
@@ -240,7 +261,7 @@ export const WorldwideChat: React.FC<WorldwideChatProps> = ({
                     </div>
                   </div>
 
-                  <p className="text-xs font-sans font-light leading-relaxed text-slate-300 break-words">
+                  <p className="text-xs font-sans font-light leading-relaxed text-slate-200 break-words pl-0.5">
                     {item.message}
                   </p>
                 </div>

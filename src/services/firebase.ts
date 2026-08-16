@@ -91,7 +91,7 @@ export function subscribeToLiveMessages(
   onError?: (err: unknown) => void
 ) {
   const path = 'messages';
-  const q = query(collection(db, path), orderBy('createdAt', 'desc'), limit(60));
+  const q = query(collection(db, path), orderBy('createdAt', 'desc'), limit(150));
 
   return onSnapshot(
     q,
@@ -99,12 +99,14 @@ export function subscribeToLiveMessages(
       const msgs: ChatMessage[] = [];
       snapshot.forEach((docSnap) => {
         const data = docSnap.data();
-        let timeStr = 'just now';
+        let timeStr = '';
         if (data.createdAt) {
           const jsDate = (data.createdAt as Timestamp).toDate
             ? (data.createdAt as Timestamp).toDate()
             : new Date(data.createdAt);
-          timeStr = jsDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          timeStr = jsDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        } else {
+          timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         }
 
         msgs.push({
@@ -220,20 +222,56 @@ export async function updateFirestorePresence(session: {
   }
 }
 
-// Subscribe to Active Presence Beacons
+// Subscribe to Active Presence Beacons with real-time active heartbeat filtering
 export function subscribeToPresence(
+  userCity: string,
+  userCountry: string,
   onPresenceUpdate: (stats: PresenceStats) => void
 ) {
   const path = 'presence';
-  return onSnapshot(
+  let cachedDocs: Array<{ id: string; data: Record<string, any> }> = [];
+
+  const recalculateActiveUsers = () => {
+    const now = Date.now();
+    // Heartbeats are sent every 25s; any session seen in last 75s is considered active
+    const activeDocs = cachedDocs.filter((item) => {
+      const d = item.data;
+      if (!d) return false;
+      let lastSeenMs = 0;
+      if (d.lastSeen && typeof d.lastSeen.toDate === 'function') {
+        lastSeenMs = d.lastSeen.toDate().getTime();
+      } else if (d.lastSeen) {
+        lastSeenMs = new Date(d.lastSeen).getTime();
+      }
+      return lastSeenMs > 0 && (now - lastSeenMs) <= 75000;
+    });
+
+    const totalCount = Math.max(1, activeDocs.length);
+    const cityMatches = activeDocs.filter(
+      (d) => d.data.city && userCity && d.data.city.toLowerCase() === userCity.toLowerCase()
+    ).length;
+    const countryMatches = activeDocs.filter(
+      (d) => d.data.country && userCountry && d.data.country.toLowerCase() === userCountry.toLowerCase()
+    ).length;
+
+    onPresenceUpdate({
+      totalLive: totalCount,
+      cityLive: Math.max(1, cityMatches),
+      countryLive: Math.max(1, countryMatches),
+    });
+  };
+
+  // Periodic recalculation to cleanly decay inactive tabs/sessions every 8s
+  const intervalTimer = setInterval(recalculateActiveUsers, 8000);
+
+  const unsub = onSnapshot(
     collection(db, path),
     (snapshot) => {
-      const activeCount = Math.max(1, snapshot.size);
-      onPresenceUpdate({
-        totalLive: activeCount,
-        cityLive: activeCount,
-        countryLive: activeCount,
-      });
+      cachedDocs = snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        data: docSnap.data(),
+      }));
+      recalculateActiveUsers();
     },
     (error) => {
       try {
@@ -243,6 +281,11 @@ export function subscribeToPresence(
       }
     }
   );
+
+  return () => {
+    clearInterval(intervalTimer);
+    unsub();
+  };
 }
 
 // Optional Google Auth Sign In / Out Helpers

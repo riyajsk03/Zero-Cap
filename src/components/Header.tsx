@@ -8,6 +8,7 @@ interface HeaderProps {
   isMuted: boolean;
   onToggleMute: () => void;
   onOpenRules: () => void;
+  onOpenLocationChange: () => void;
   currentThemeName: string;
   isChatOpen: boolean;
   onToggleChat: () => void;
@@ -19,6 +20,7 @@ export const Header: React.FC<HeaderProps> = ({
   isMuted,
   onToggleMute,
   onOpenRules,
+  onOpenLocationChange,
   currentThemeName,
   isChatOpen,
   onToggleChat,
@@ -64,15 +66,19 @@ export const Header: React.FC<HeaderProps> = ({
 
         <div className="h-8 w-[1px] bg-white/10 hidden sm:block" />
 
-        {/* Local Clock & Coarse Location */}
-        <div className="text-right hidden sm:block">
+        {/* Local Clock & Coarse Location (Clickable to switch city) */}
+        <button
+          onClick={onOpenLocationChange}
+          className="text-right hidden sm:block group hover:opacity-100 transition-opacity cursor-pointer p-1 rounded-xl hover:bg-white/5"
+          title="Click to set your city & location"
+        >
           <span className="block text-base sm:text-lg font-mono-code font-semibold tracking-tight text-slate-200">
             {location.formattedTime}
           </span>
-          <span className="block text-[10px] uppercase font-mono-code tracking-widest text-indigo-300/50 mt-0.5">
-            {location.city}, {location.countryCode}
+          <span className="block text-[10px] uppercase font-mono-code tracking-widest text-indigo-300/70 group-hover:text-indigo-200 mt-0.5 underline decoration-indigo-400/40 decoration-dotted">
+            📍 {location.city}, {location.countryCode}
           </span>
-        </div>
+        </button>
 
         {/* Automated System Atmosphere, Chat & Sound Controls */}
         <div className="flex items-center gap-2">
