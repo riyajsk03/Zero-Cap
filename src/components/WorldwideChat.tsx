@@ -84,19 +84,20 @@ export const WorldwideChat: React.FC<WorldwideChatProps> = ({
     <>
       {/* Floating Worldwide Chat Open Trigger (Visible when Chat is Closed) */}
       {!isOpen && (
-        <div className="fixed bottom-24 sm:bottom-28 right-4 sm:right-8 z-30 pointer-events-auto animate-fade-in">
+        <div className="fixed bottom-20 sm:bottom-28 right-3 sm:right-8 z-30 pointer-events-auto animate-fade-in">
           <button
             onClick={onToggleOpen}
-            className="flex items-center gap-2.5 px-4 py-2.5 sm:py-3 rounded-full glass-panel-interactive text-xs font-mono-code text-white shadow-2xl border border-white/20 hover:border-indigo-400/50 hover:scale-105 active:scale-95 transition-all group"
+            className="flex items-center gap-2 px-3.5 sm:px-4 py-2 sm:py-3 rounded-full glass-panel-interactive text-[11px] sm:text-xs font-mono-code text-white shadow-2xl border border-white/20 hover:border-indigo-400/50 hover:scale-105 active:scale-95 transition-all group"
             title="Open Worldwide Live Chat"
           >
             <div className="relative">
-              <MessageSquare className="w-4 h-4 text-indigo-400 group-hover:text-indigo-300" />
+              <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-400 group-hover:text-indigo-300" />
               <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
               <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400" />
             </div>
-            <span className="font-bold tracking-wider text-slate-100">WORLDWIDE CHAT</span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+            <span className="font-bold tracking-wider text-slate-100 hidden xs:inline sm:inline">WORLDWIDE CHAT</span>
+            <span className="font-bold tracking-wider text-slate-100 xs:hidden sm:hidden">CHAT</span>
+            <span className="text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
               LIVE
             </span>
           </button>
@@ -105,7 +106,7 @@ export const WorldwideChat: React.FC<WorldwideChatProps> = ({
 
       {/* Main Chat Container (Opens / Closes smoothly on Desktop & Mobile) */}
       <div
-        className={`fixed top-20 sm:top-24 bottom-24 sm:bottom-28 right-4 sm:right-8 w-[calc(100vw-2rem)] sm:w-80 md:w-88 glass-panel rounded-3xl p-4 sm:p-5 flex flex-col z-30 pointer-events-auto transition-all duration-300 ${
+        className={`fixed top-16 sm:top-24 bottom-22 sm:bottom-28 right-3 sm:right-8 w-[calc(100vw-1.5rem)] sm:w-80 md:w-88 glass-panel rounded-3xl p-3.5 sm:p-5 flex flex-col z-30 pointer-events-auto transition-all duration-300 ${
           isOpen
             ? 'translate-y-0 opacity-100 scale-100 pointer-events-auto shadow-2xl'
             : 'translate-y-[120%] sm:translate-y-12 opacity-0 scale-95 pointer-events-none'

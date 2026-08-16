@@ -166,7 +166,7 @@ export default function App() {
   }, [isAudioMuted]);
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-[#050508] text-white flex flex-col justify-between select-none">
+    <div className="relative w-screen h-[100dvh] min-h-[100dvh] overflow-hidden bg-[#050508] text-white flex flex-col justify-between select-none">
       {/* YouTube IFrame Player Container (Active in Viewport + PIP Video Feed Toggle) */}
       <div
         className={`fixed transition-all duration-300 ${
@@ -250,7 +250,7 @@ export default function App() {
       />
 
       {/* Bottom Floating Glassmorphism ZERO CAP Radio Player with Skip & Song Jump */}
-      <div className="relative z-30 flex flex-col items-center">
+      <div className="relative z-30 flex flex-col items-center w-full pb-1 sm:pb-2">
         <RadioPlayer
           currentTrack={currentTrack}
           isPlaying={isPlaying}
@@ -261,8 +261,8 @@ export default function App() {
           onToggleVideoFeed={() => setShowVideoFeed(!showVideoFeed)}
         />
 
-        {/* Nostalgic Bottom Subtext */}
-        <div className="flex items-center gap-6 text-[9px] font-mono-code uppercase tracking-[0.35em] text-slate-400/30 pb-2">
+        {/* Nostalgic Bottom Subtext (Hidden on mobile to keep player completely in view) */}
+        <div className="hidden sm:flex items-center gap-6 text-[9px] font-mono-code uppercase tracking-[0.35em] text-slate-400/30 pb-1 sm:pb-2">
           <span>just stay a while</span>
           <span>•</span>
           <span>the cat gets it</span>

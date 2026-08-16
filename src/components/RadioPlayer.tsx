@@ -100,46 +100,53 @@ export const RadioPlayer: React.FC<RadioPlayerProps> = ({
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
-    <div className="relative w-full max-w-5xl mx-auto px-4 sm:px-8 pb-4 sm:pb-6 z-30 pointer-events-auto">
+    <div className="relative w-full max-w-5xl mx-auto px-2.5 sm:px-6 md:px-8 pb-1 sm:pb-3 z-30 pointer-events-auto">
       {/* Main Glass Player Container */}
-      <div className="glass-panel rounded-2xl sm:rounded-3xl p-3 sm:p-4 md:p-5 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-6 shadow-2xl transition-all duration-300">
+      <div className="glass-panel rounded-2xl sm:rounded-3xl p-2.5 sm:p-4 md:p-5 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-6 shadow-2xl transition-all duration-300">
         {/* Left: Track Information & Retro Vinyl Art */}
-        <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto flex-1 min-w-0">
+        <div className="flex items-center gap-2.5 sm:gap-4 w-full sm:w-auto flex-1 min-w-0">
           {/* Animated Vinyl Icon / Equalizer */}
-          <div className="relative w-11 h-11 sm:w-14 sm:h-14 rounded-xl bg-slate-900/80 border border-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden group">
-            <div className="absolute inset-0 bg-indigo-500/10 flex items-end justify-center gap-1 p-2">
-              <div className={`w-1 bg-indigo-400 rounded-full transition-all ${isPlaying ? 'animate-eq-1' : 'h-1.5'}`} />
-              <div className={`w-1 bg-indigo-300 rounded-full transition-all ${isPlaying ? 'animate-eq-2' : 'h-2'}`} />
-              <div className={`w-1 bg-purple-400 rounded-full transition-all ${isPlaying ? 'animate-eq-3' : 'h-1'}`} />
-              <div className={`w-1 bg-sky-400 rounded-full transition-all ${isPlaying ? 'animate-eq-4' : 'h-2.5'}`} />
+          <div className="relative w-9 h-9 sm:w-13 sm:h-13 md:w-14 md:h-14 rounded-xl bg-slate-900/80 border border-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden group">
+            <div className="absolute inset-0 bg-indigo-500/10 flex items-end justify-center gap-0.5 sm:gap-1 p-1.5 sm:p-2">
+              <div className={`w-0.5 sm:w-1 bg-indigo-400 rounded-full transition-all ${isPlaying ? 'animate-eq-1' : 'h-1.5'}`} />
+              <div className={`w-0.5 sm:w-1 bg-indigo-300 rounded-full transition-all ${isPlaying ? 'animate-eq-2' : 'h-2'}`} />
+              <div className={`w-0.5 sm:w-1 bg-purple-400 rounded-full transition-all ${isPlaying ? 'animate-eq-3' : 'h-1'}`} />
+              <div className={`w-0.5 sm:w-1 bg-sky-400 rounded-full transition-all ${isPlaying ? 'animate-eq-4' : 'h-2.5'}`} />
             </div>
 
-            <Radio className="w-5 h-5 text-indigo-200 relative z-10 opacity-70 group-hover:opacity-100 transition-opacity" />
+            <Radio className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-200 relative z-10 opacity-70 group-hover:opacity-100 transition-opacity" />
           </div>
 
           {/* Track Labels & Progress */}
           <div className="flex flex-col min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 text-[9px] sm:text-[10px] font-bold font-mono-code text-indigo-400 tracking-[0.2em] uppercase">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                LIVE PLAYER
-              </span>
-              <span className="text-[9px] font-mono-code text-slate-400/60 hidden md:inline">
-                • TRACK {String(currentTrack.playlistIndex || 1).padStart(2, '0')} / {totalTracksCount}
+            <div className="flex items-center justify-between sm:justify-start gap-2">
+              <div className="flex items-center gap-1.5">
+                <span className="inline-flex items-center gap-1 text-[8.5px] sm:text-[10px] font-bold font-mono-code text-indigo-400 tracking-[0.18em] uppercase">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  LIVE
+                </span>
+                <span className="text-[8.5px] sm:text-[9px] font-mono-code text-slate-400/60">
+                  • TRACK {String(currentTrack.playlistIndex || 1).padStart(2, '0')}/{totalTracksCount}
+                </span>
+              </div>
+
+              {/* Mobile Time readout */}
+              <span className="text-[8.5px] font-mono-code text-slate-400 sm:hidden">
+                {formatTime(currentTime)} / {formatTime(duration)}
               </span>
             </div>
 
-            <h3 className="text-xs sm:text-sm font-semibold tracking-tight text-white truncate max-w-[200px] sm:max-w-xs md:max-w-md">
+            <h3 className="text-[11.5px] sm:text-sm font-semibold tracking-tight text-white truncate max-w-[210px] sm:max-w-xs md:max-w-md mt-0.5">
               {hasError ? 'Music Signal Lost' : currentTrack.title || 'The Power Of Words • Victory Family Church'}
             </h3>
 
             {/* Time Bar & Scrub */}
             <div className="flex items-center gap-2 mt-1 sm:mt-1.5 w-full max-w-sm">
-              <span className="text-[9px] sm:text-[10px] font-mono-code text-slate-400/80">
+              <span className="text-[9px] sm:text-[10px] font-mono-code text-slate-400/80 hidden sm:inline">
                 {formatTime(currentTime)}
               </span>
 
-              <div className="relative flex-1 flex items-center h-4 group cursor-pointer">
+              <div className="relative flex-1 flex items-center h-3.5 sm:h-4 group cursor-pointer">
                 {/* Background Rail */}
                 <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
                   <div
@@ -158,7 +165,7 @@ export const RadioPlayer: React.FC<RadioPlayerProps> = ({
                 />
               </div>
 
-              <span className="text-[9px] sm:text-[10px] font-mono-code text-slate-400/80">
+              <span className="text-[9px] sm:text-[10px] font-mono-code text-slate-400/80 hidden sm:inline">
                 {formatTime(duration)}
               </span>
             </div>
@@ -166,30 +173,30 @@ export const RadioPlayer: React.FC<RadioPlayerProps> = ({
         </div>
 
         {/* Center/Right: Playback Skip & Controls */}
-        <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4 w-full sm:w-auto">
+        <div className="flex items-center justify-between sm:justify-end gap-1.5 sm:gap-4 w-full sm:w-auto pt-1 sm:pt-0 border-t border-white/5 sm:border-t-0">
           {hasError ? (
             <button
               onClick={onRetry}
-              className="flex items-center gap-2 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/40 rounded-full text-xs font-mono-code transition-all"
+              className="flex items-center gap-2 px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/40 rounded-full text-xs font-mono-code transition-all mx-auto sm:mx-0"
             >
               <RotateCw className="w-3.5 h-3.5 animate-spin" />
               <span>RECONNECT SIGNAL</span>
             </button>
           ) : (
-            <div className="flex items-center gap-1 sm:gap-2.5 mx-auto sm:mx-0">
+            <div className="flex items-center justify-center gap-1 sm:gap-2.5 w-full sm:w-auto">
               {/* Random / Shuffle Track Button */}
               <button
                 onClick={playRandomTrack}
-                className="p-2 text-slate-400 hover:text-indigo-300 hover:bg-white/5 rounded-full transition-all"
+                className="p-1.5 sm:p-2 text-slate-400 hover:text-indigo-300 hover:bg-white/5 rounded-full transition-all"
                 title="Play Random Song from Playlist"
               >
-                <Shuffle className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+                <Shuffle className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
               </button>
 
               {/* Previous Song Skip */}
               <button
                 onClick={prevTrack}
-                className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-full transition-all"
+                className="p-1.5 sm:p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-full transition-all"
                 title="Previous Song in Playlist"
               >
                 <SkipBack className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -198,88 +205,88 @@ export const RadioPlayer: React.FC<RadioPlayerProps> = ({
               {/* Jump Back 10 Seconds */}
               <button
                 onClick={() => jumpSeconds(-10)}
-                className="p-1.5 text-slate-400 hover:text-indigo-300 hover:bg-white/5 rounded-full transition-all relative flex items-center justify-center"
+                className="p-1 sm:p-1.5 text-slate-400 hover:text-indigo-300 hover:bg-white/5 rounded-full transition-all relative flex items-center justify-center"
                 title="Jump Back 10 Seconds"
               >
-                <RotateCcw className="w-4 h-4" />
-                <span className="text-[8px] font-mono-code font-bold absolute -bottom-1 text-slate-400">10</span>
+                <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="text-[7px] sm:text-[8px] font-mono-code font-bold absolute -bottom-0.5 sm:-bottom-1 text-slate-400">10</span>
               </button>
 
               {/* Play / Pause Main Button */}
               <button
                 onClick={onTogglePlay}
-                className="w-10 h-10 sm:w-12 sm:h-12 bg-white text-slate-950 rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all mx-1"
+                className="w-9 h-9 sm:w-12 sm:h-12 bg-white text-slate-950 rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all mx-0.5 sm:mx-1 flex-shrink-0"
                 title={isPlaying ? 'Pause Music' : 'Play Music'}
               >
                 {isPlaying ? (
-                  <Pause className="w-5 h-5 fill-current" />
+                  <Pause className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
                 ) : (
-                  <Play className="w-5 h-5 fill-current ml-0.5" />
+                  <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current ml-0.5" />
                 )}
               </button>
 
               {/* Jump Forward 10 Seconds */}
               <button
                 onClick={() => jumpSeconds(10)}
-                className="p-1.5 text-slate-400 hover:text-indigo-300 hover:bg-white/5 rounded-full transition-all relative flex items-center justify-center"
+                className="p-1 sm:p-1.5 text-slate-400 hover:text-indigo-300 hover:bg-white/5 rounded-full transition-all relative flex items-center justify-center"
                 title="Jump Forward 10 Seconds"
               >
-                <RotateCw className="w-4 h-4" />
-                <span className="text-[8px] font-mono-code font-bold absolute -bottom-1 text-slate-400">10</span>
+                <RotateCw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="text-[7px] sm:text-[8px] font-mono-code font-bold absolute -bottom-0.5 sm:-bottom-1 text-slate-400">10</span>
               </button>
 
               {/* Next Song Skip */}
               <button
                 onClick={nextTrack}
-                className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-full transition-all"
+                className="p-1.5 sm:p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-full transition-all"
                 title="Next Song in Playlist"
               >
                 <SkipForward className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
+
+              {/* Auxiliary Tools: Video PIP + Volume */}
+              <div className="flex items-center gap-1 sm:gap-2 border-l border-white/10 pl-1.5 sm:pl-3 ml-0.5 sm:ml-1">
+                {/* Toggle Video Feed PIP */}
+                {onToggleVideoFeed && (
+                  <button
+                    onClick={onToggleVideoFeed}
+                    className={`p-1 sm:p-1.5 rounded-lg text-xs transition-colors ${
+                      showVideoFeed
+                        ? 'bg-indigo-500/30 text-indigo-300 border border-indigo-500/40'
+                        : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    }`}
+                    title={showVideoFeed ? 'Hide Video Feed' : 'Show YouTube Video Feed (PIP)'}
+                  >
+                    <Tv className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  </button>
+                )}
+
+                {/* Volume Control */}
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={toggleVolumeMute}
+                    className="p-1 text-slate-400 hover:text-slate-200 transition-colors"
+                    title={isVolumeMuted ? 'Unmute Player' : 'Mute Player'}
+                  >
+                    {isVolumeMuted || volume === 0 ? (
+                      <VolumeX className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-400" />
+                    ) : (
+                      <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-300" />
+                    )}
+                  </button>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    value={isVolumeMuted ? 0 : volume}
+                    onChange={handleVolumeChange}
+                    className="w-12 sm:w-16 h-1 bg-white/20 rounded-full accent-indigo-400 cursor-pointer hidden md:block"
+                    title="Adjust volume"
+                  />
+                </div>
+              </div>
             </div>
           )}
-
-          {/* Auxiliary Tools: Video PIP + Volume */}
-          <div className="flex items-center gap-2 border-l border-white/10 pl-2 sm:pl-4">
-            {/* Toggle Video Feed PIP */}
-            {onToggleVideoFeed && (
-              <button
-                onClick={onToggleVideoFeed}
-                className={`p-1.5 rounded-lg text-xs transition-colors ${
-                  showVideoFeed
-                    ? 'bg-indigo-500/30 text-indigo-300 border border-indigo-500/40'
-                    : 'text-slate-400 hover:text-white hover:bg-white/5'
-                }`}
-                title={showVideoFeed ? 'Hide Video Feed' : 'Show YouTube Video Feed (PIP)'}
-              >
-                <Tv className="w-4 h-4" />
-              </button>
-            )}
-
-            {/* Volume Control */}
-            <div className="flex items-center gap-1.5 ml-1">
-              <button
-                onClick={toggleVolumeMute}
-                className="p-1 text-slate-400 hover:text-slate-200 transition-colors"
-                title={isVolumeMuted ? 'Unmute Player' : 'Mute Player'}
-              >
-                {isVolumeMuted || volume === 0 ? (
-                  <VolumeX className="w-4 h-4 text-red-400" />
-                ) : (
-                  <Volume2 className="w-4 h-4 text-slate-300" />
-                )}
-              </button>
-              <input
-                type="range"
-                min={0}
-                max={100}
-                value={isVolumeMuted ? 0 : volume}
-                onChange={handleVolumeChange}
-                className="w-12 sm:w-16 h-1 bg-white/20 rounded-full accent-indigo-400 cursor-pointer hidden sm:block"
-                title="Adjust volume"
-              />
-            </div>
-          </div>
         </div>
       </div>
     </div>
